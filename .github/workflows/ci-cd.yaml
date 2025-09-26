@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: docker.io
+      IMAGE_NAME: ramanijadala/k8s
+
+    steps:
+      # === Checkout Code ===
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # === Build Jar ===
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build JAR
+        run: |
+          cd Application
+          mvn clean package -DskipTests
+
+      # === SonarQube Scan ===
+      - name: SonarQube Scan
+        run: |
+          cd Application
+          mvn sonar:sonar \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      # === Build Docker Image ===
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: |
+          cd Application
+          docker build -t $REGISTRY/$IMAGE_NAME:${{ github.run_number }} .
+
+      # === Docker Image Scan ===
+      - name: Scan Docker Image with Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      # === Push Docker Image ===
+      - name: Push Docker Image
+        run: |
+          docker push $REGISTRY/$IMAGE_NAME:${{ github.run_number }}
+
+      # === Update Kubernetes Deployment manifest ===
+      - name: Update K8s Deployment YAML
+        run: |
+          sed -i "s|k8s:.*|k8s:${{ github.run_number }}|g" Ansible/k8s_deployment.yaml
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add Ansible/k8s_deployment.yaml
+          git commit -m "Update deployment image tag to version ${{ github.run_number }}"
+          git push
+
+      # === Deploy to K8s using Ansible ===
+      - name: Set up Ansible
+        run: |
+          pip install ansible kubernetes openshift
+
+      - name: Restore kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook Ansible/ansible_k8s_deploy_playbook.yaml
