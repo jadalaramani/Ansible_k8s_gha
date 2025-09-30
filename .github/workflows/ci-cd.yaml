@@ -68,8 +68,8 @@ jobs:
       - name: Update K8s Deployment YAML
         run: |
           sed -i "s|k8s:.*|k8s:${{ github.run_number }}|g" Ansible/k8s_deployment.yaml
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.name "jadalaramani"
+          git config user.email "jadalaramani@gmail.com"
           git add Ansible/k8s_deployment.yaml
           git commit -m "Update deployment image tag to version ${{ github.run_number }}"
           git push
@@ -78,10 +78,6 @@ jobs:
       - name: Set up Ansible
         run: |
           pip install ansible kubernetes openshift
-
-      - name: Restore kubeconfig
-        run: |
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
 
       - name: Run Ansible Playbook
         run: |
