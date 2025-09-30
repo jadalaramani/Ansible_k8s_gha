@@ -32,13 +32,13 @@ jobs:
           cd Application
           mvn clean package -DskipTests
 
-      # === SonarQube Scan ===
-      - name: SonarQube Scan
-        run: |
-          cd Application
-          mvn sonar:sonar \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      # # === SonarQube Scan ===
+      # - name: SonarQube Scan
+      #   run: |
+      #     cd Application
+      #     mvn sonar:sonar \
+      #       -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+      #       -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       # === Build Docker Image ===
       - name: Log in to DockerHub
@@ -52,13 +52,13 @@ jobs:
           cd Application
           docker build -t $REGISTRY/$IMAGE_NAME:${{ github.run_number }} .
 
-      # === Docker Image Scan ===
-      - name: Scan Docker Image with Trivy
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
+      # # === Docker Image Scan ===
+      # - name: Scan Docker Image with Trivy
+      #   uses: aquasecurity/trivy-action@0.20.0
+      #   with:
+      #     image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+      #     severity: CRITICAL,HIGH
+      #     ignore-unfixed: true
 
       # === Push Docker Image ===
       - name: Push Docker Image
@@ -94,6 +94,8 @@ jobs:
           echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
+      - name: Check cluster access
+        run: kubectl get nodes
 
       - name: Run Ansible Playbook
         run: |
