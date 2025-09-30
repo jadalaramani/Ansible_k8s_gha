@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: mc-app
-        image: ramanijadala/k8s:134
+        image: ramanijadala/k8s:135
         ports:
         - containerPort: 8080
 ---
