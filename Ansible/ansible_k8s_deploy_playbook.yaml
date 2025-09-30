@@ -9,8 +9,20 @@
 #     - name: Apply Deployment
 #       ansible.builtin.command: kubectl apply -f /home/runner/work/Ansible_k8s_gha/Ansible_k8s_gha/Ansible/k8s_deployment.yaml
     
-- name: Apply Deployment using Ansible k8s module
-  community.kubernetes.k8s:
-    kubeconfig: /home/runner/.kube/config
-    state: present
-    src: "{{ playbook_dir }}/k8s_deployment.yaml"
+# - name: Apply Deployment using Ansible k8s module
+#   community.kubernetes.k8s:
+#     kubeconfig: /home/runner/.kube/config
+#     state: present
+#     src: "{{ playbook_dir }}/k8s_deployment.yaml"
+---
+- name: Deploy Application into EKS cluster
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+
+    - name: Deploy the application using k8s module
+      community.kubernetes.k8s:
+        kubeconfig: /home/runner/.kube/config   # path to your kubeconfig
+        state: present
+        definition: "{{ lookup('file', '/home/runner/work/Ansible_k8s_gha/Ansible_k8s_gha/Ansible/k8s_deployment.yaml') }}"
