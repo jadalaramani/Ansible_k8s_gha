@@ -10,7 +10,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    if: github.actor != 'github-actions[bot]'
+    
     env:
       REGISTRY: docker.io
       IMAGE_NAME: ramanijadala/k8s
@@ -26,7 +27,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
+     #===Build Artifactory===
       - name: Build JAR
         run: |
           cd Application
@@ -66,12 +67,14 @@ jobs:
           docker push $REGISTRY/$IMAGE_NAME:${{ github.run_number }}
 
       # === Update Kubernetes Deployment manifest ===
+      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+          
       - name: Checkout full history
         uses: actions/checkout@v3
         with:
