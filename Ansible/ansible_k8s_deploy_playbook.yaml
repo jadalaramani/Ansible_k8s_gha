@@ -7,7 +7,7 @@
   tasks:
     - name: Copy k8s_deployment.yaml file to eks cluster
       copy:
-        src: ./Ansible/k8s_deployment.yaml 
+        src: {{ lookup('env','GITHUB_WORKSPACE') }}/Ansible/k8s_deployment.yaml 
         dest: /home/ec2-user/
 
     - name: Apply Deployment
