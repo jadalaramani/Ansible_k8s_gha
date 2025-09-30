@@ -1,12 +1,13 @@
 ---
 - name: Deploy Application into eks cluster 
-  hosts: Localhost  # Replace with your target Kubernetes master host or group
+  hosts: localhost
+  connection: local
   gather_facts: no  # No need to gather facts for this playbook
   become: yes 
   tasks:
     - name: Copy k8s_deployment.yaml file to eks cluster
       copy:
-        src: /var/lib/jenkins/workspace/cicdprject/Ansible/k8s_deployment.yaml  # Assuming Jenkins workspace variable
+        src: ./Ansible/k8s_deployment.yaml 
         dest: /home/ec2-user/
 
     - name: Apply Deployment
