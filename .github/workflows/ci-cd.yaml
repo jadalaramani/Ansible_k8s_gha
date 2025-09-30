@@ -93,7 +93,9 @@ jobs:
       # === Deploy to K8s using Ansible ===
       - name: Set up Ansible
         run: |
+          sudo apt-get update && sudo apt-get install -y ansible
           pip install ansible kubernetes openshift
+          ansible-galaxy collection install community.kubernetes
       - name: Configure kubeconfig
         run: |
           mkdir -p $HOME/.kube 
