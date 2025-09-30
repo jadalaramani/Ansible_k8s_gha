@@ -10,7 +10,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'
+   # if: github.actor != 'github-actions[bot]'
     
     env:
       REGISTRY: docker.io
@@ -90,7 +90,7 @@ jobs:
           git config user.name "jadalaramani"
           git config user.email "jadalaramani@gmail.com"
           git add Ansible/k8s_deployment.yaml
-          git commit -m "Update deployment image tag to version ${{ github.run_number }}"
+          git commit -m "Update deployment image tag to version ${{ github.run_number }} [skip ci]"
           git push
 
       # === Deploy to K8s using Ansible ===
