@@ -84,6 +84,11 @@ jobs:
       - name: Set up Ansible
         run: |
           pip install ansible kubernetes openshift
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
 
       - name: Run Ansible Playbook
         run: |
