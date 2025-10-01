@@ -5,12 +5,17 @@
 # 🚀 CI/CD Deployment to AWS EKS with GitHub Actions + Ansible
 
 This repository implements a **complete CI/CD pipeline** for deploying a containerised application to an **AWS EKS (Kubernetes) cluster**.
-It uses:
 
-* **GitHub Actions** for automation
-* **Docker** for image build & push
-* **Trivy** for security scanning
-* **Ansible** for applying manifests to the cluster
+## Jenkins → GitHub Actions mapping
+
+* **Checkout Code** → `actions/checkout`
+* **Build Jar** → `mvn clean package`
+* **SonarQube Scan** → `sonar-maven-plugin` with `SONAR_TOKEN`
+* **Build Docker Image** → `docker build`
+* **Scan Docker Image** → `aquasecurity/trivy-action`
+* **Push Image to DockerHub** → `docker/login-action` + `docker push`
+* **Update Kubernetes Deployment Manifest in GitHub repo** → `git commit` & `push` with `GITHUB_TOKEN`
+* **K8s Deployment using Ansible** → `ansible-playbook` step (runner must have kube access)
 
 ---
 
@@ -43,8 +48,11 @@ It uses:
 | `AWS_ACCESS_KEY_ID`     | AWS IAM Access Key with EKS + ECR permissions     |
 | `AWS_SECRET_ACCESS_KEY` | AWS IAM Secret Key                                |
 | `KUBECONFIG_DATA`       | Base64-encoded kubeconfig of your EKS cluster     |
-| `DOCKERHUB`             | Docker Hub password or token                      |
 | `GITHUB_TOKEN`          | Provided automatically by GitHub (no need to set) |
+| `DOCKER_USERNAME`       | DockerHub username                                |
+| `DOCKER_PASSWORD`       | DockerHub password/token                          |
+| `SONAR_HOST_URL`        | e.g. `http://3.88.43.182:9000`                    |
+| `SONAR_TOKEN`           | SonarQube token                                   |
 
 ---
 
@@ -98,7 +106,31 @@ https://github.com/jadalaramani/Ansible_k8s_gha/blob/main/Ansible/ansible_k8s_de
 ```
 https://github.com/jadalaramani/Ansible_k8s_gha/blob/main/Ansible/k8s_deployment.yaml
 ```
+
+## Notes
+
+* `github.run_number` acts like Jenkins `${BUILD_NUMBER}`.
+* The `Update YAML + Push` step commits back to the same repo.
+* The Ansible step assumes your `playbook` uses the updated YAML file.
 ---
+Implementation:
+
+## Step1: Install kubectl & eksctl
+
+```
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin
+kubectl version --short --client
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+```
+```
+aws configure
+```
+```
+eksctl create cluster --name my-cluster 
+```
 
 ## 🛠 Troubleshooting
 
@@ -122,12 +154,4 @@ https://github.com/jadalaramani/Ansible_k8s_gha/blob/main/Ansible/k8s_deployment
 * Kubernetes manifest updated with the new image tag.
 * Ansible applies the manifest to EKS.
 * GitHub Actions job completes successfully.
-
----
-
----
-
-This single document can be copied directly into your repository as `README.md` and serves as full project documentation.
-
-Do you want me to also include a **sample secrets setup screenshot/table** (how to base64 encode kubeconfig) in this README?
 
