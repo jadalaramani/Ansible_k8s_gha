@@ -36,7 +36,7 @@ jobs:
       - name: SonarQube Scan
         run: |
           cd Application
-          mvn sonar:sonar \
+          mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
             -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
