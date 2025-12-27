@@ -10,7 +10,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-   # if: github.actor != 'github-actions[bot]'
     
     env:
       REGISTRY: docker.io
@@ -98,7 +97,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y ansible
           python -m pip install --upgrade pip
-          pip install ansible kubernetes openshift
+          pip install ansible kubernetes 
           
       - name: Configure kubeconfig
         run: |
