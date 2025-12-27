@@ -132,6 +132,14 @@ aws configure
 eksctl create cluster --name my-cluster 
 ```
 
+## sonarqube
+```
+yum install docker 
+systemctl start docker
+systemctl enable docker
+docker run -itd --name sonar -p 9000:9000 sonarqube:lts
+```
+
 ## 🛠 Troubleshooting
 
 * **`No inventory was parsed` warning:**
