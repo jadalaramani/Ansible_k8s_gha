@@ -139,7 +139,10 @@ systemctl start docker
 systemctl enable docker
 docker run -itd --name sonar -p 9000:9000 sonarqube:lts
 ```
-
+## Base64 kubeconfig
+```
+cat ~/.kube/config | base64 -w 0
+```
 ## 🛠 Troubleshooting
 
 * **`No inventory was parsed` warning:**
